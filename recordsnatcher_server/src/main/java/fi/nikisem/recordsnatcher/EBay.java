@@ -41,7 +41,7 @@ public class EBay {
         String[] australia = {"australia", "https://www.ebay.com.au" + baseURL, "New listing", offset};
         String[] hongKong = {"hong kong", "https://www.ebay.com.hk/sch/Music/11233/i.html?_from=R40&_sop=10&_ipg=200&_nkw=" + keyword + "&rt=nc&LH_PrefLoc=4&_trksid=p2045573.m1684", "新刊登物品", offset};
         String[] india = {"india", "https://www.ebay.in/sch/i.html?_odkw=" + keyword + "&LH_PrefLoc=7&_sop=10&_osacat=0&_from=R40&_trksid=p2045573.m570.l1313.TR0.TRC0.H0.TRS0&_nkw=" + keyword + "&_sacat=11232", "New listing", offset};
-        String[] malaysia = {"malaysia", "https://www.ebay.com.my" + baseURL, "New listing", "items found from eBay international sellers", offset};
+        String[] malaysia = {"malaysia", "https://www.ebay.com.my" + baseURL, "New listing", offset};
         String[] philippines = {"philippines", "https://www.ebay.ph/sch/i.html?LH_PrefLoc=1&_sop=10&_from=R40&_trksid=m570.l1313&_nkw=" + keyword + "&_sacat=11233", "New listing", offset};
         String[] singapore = {"singapore", "https://www.ebay.com.sg" + baseURL, "New listing", offset};
 
@@ -52,11 +52,15 @@ public class EBay {
 
         eBayList.addAll(get(com));
         tempList.add(get(uk));
+        tempList.add(get(austria));
         tempList.add(get(belgium));
         tempList.add(get(france));
         tempList.add(get(germany));
         tempList.add(get(ireland));
         tempList.add(get(italy));
+        tempList.add(get(netherland));
+        tempList.add(get(poland));
+        tempList.add(get(spain));
         tempList.add(get(switzerland));
         tempList.add(get(australia));
         tempList.add(get(hongKong));
@@ -423,7 +427,7 @@ public class EBay {
 
         }
 
-        if (country[0].equals("germany") || country[0].equals("austria") || country[0].equals("switzerland")) {
+        if (country[0].equals("germany") || country[0].equals("switzerland")) {
 
             String first = timeStampString.substring(0, 8);
             if (first.contains("Mrz")) {
@@ -441,15 +445,6 @@ public class EBay {
 
                 LocalDateTime oldDateTime = timeStamp;
                 ZoneId oldZone = ZoneId.of("Europe/Berlin");
-                timeStamp = oldDateTime.atZone(oldZone)
-                        .withZoneSameInstant(newZone)
-                        .toLocalDateTime();
-            }
-
-            if (country[0].equals("austria")) {
-
-                LocalDateTime oldDateTime = timeStamp;
-                ZoneId oldZone = ZoneId.of("Europe/Vienna");
                 timeStamp = oldDateTime.atZone(oldZone)
                         .withZoneSameInstant(newZone)
                         .toLocalDateTime();
@@ -475,6 +470,69 @@ public class EBay {
 
             LocalDateTime oldDateTime = timeStamp;
             ZoneId oldZone = ZoneId.of("Europe/Rome");
+            timeStamp = oldDateTime.atZone(oldZone)
+                    .withZoneSameInstant(newZone)
+                    .toLocalDateTime();
+        }
+
+        if (country[0].equals("austria")) {
+
+            String first = timeStampString.substring(0, 8);
+            String last = timeStampString.substring(9, timeStampString.length());
+            timeStampString = first + " " + year + " " + last;
+            timeStampString = timeStampString.replace(". ", ".");
+            Locale austria = new Locale("de", "AT");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MMM.yyyy HH:mm", austria);
+
+            timeStamp = parseTimeStamp(timeStampString, formatter, country[0]);
+
+            LocalDateTime oldDateTime = timeStamp;
+            ZoneId oldZone = ZoneId.of("Europe/Vienna");
+            timeStamp = oldDateTime.atZone(oldZone)
+                    .withZoneSameInstant(newZone)
+                    .toLocalDateTime();
+        }
+
+        if (country[0].equals("netherland")) {
+
+            timeStampString = timeStampString.replace(" ", "-" + year + " ");
+            Locale netherland = new Locale("nl", "NL");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm", netherland);
+
+            timeStamp = parseTimeStamp(timeStampString, formatter, country[0]);
+
+            LocalDateTime oldDateTime = timeStamp;
+            ZoneId oldZone = ZoneId.of("Europe/Amsterdam");
+            timeStamp = oldDateTime.atZone(oldZone)
+                    .withZoneSameInstant(newZone)
+                    .toLocalDateTime();
+        }
+
+        if (country[0].equals("poland")) {
+
+            timeStampString = timeStampString.replace(" ", "-" + year + " ");
+            Locale poland = new Locale("pl", "PL");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm", poland);
+
+            timeStamp = parseTimeStamp(timeStampString, formatter, country[0]);
+
+            LocalDateTime oldDateTime = timeStamp;
+            ZoneId oldZone = ZoneId.of("Europe/Warsaw");
+            timeStamp = oldDateTime.atZone(oldZone)
+                    .withZoneSameInstant(newZone)
+                    .toLocalDateTime();
+        }
+
+        if (country[0].equals("spain")) {
+
+            timeStampString = timeStampString.replace(" ", "-" + year + " ");
+            Locale spain = new Locale("es", "ES");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm", spain);
+
+            timeStamp = parseTimeStamp(timeStampString, formatter, country[0]);
+
+            LocalDateTime oldDateTime = timeStamp;
+            ZoneId oldZone = ZoneId.of("Europe/Madrid");
             timeStamp = oldDateTime.atZone(oldZone)
                     .withZoneSameInstant(newZone)
                     .toLocalDateTime();

@@ -99,7 +99,7 @@ export class Main extends React.Component {
                 <div className="grid-item-left" id="load">
                     <div>Welcome to Record Snatcher beta.<br/>
                         Record Snatcher is a power search tool for music collectors. It gets you the latest listings
-                        from 15 diffirent eBay sites and huuto.net
+                        from 19 diffirent eBay sites and huuto.net
                     </div>
                     <br/>
                     <br/>
