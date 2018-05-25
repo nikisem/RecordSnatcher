@@ -37,6 +37,12 @@ After that all the duplicate items are removed and remaining results are display
 
 You can try out the [Record Snatcher beta app here](http://recordsnatcher.s3-website.eu-central-1.amazonaws.com).
 
+## Additional Features
+In addition to the above user can add filter keywords to the search. Items containing those keywords in the title will be filtered out from the search results.
+
+There is also a mailer feature which is currently publicly unavailable but you can take a look at the code in the server's Mailer class. 
+Mailer feature automatically fetches data every 10 minutes based on a main keyword predetermined by the user. If any of the fetched items contain some of the additional user predetermined keywords in their titles the mailer will send user an email notification containing the details of those items. 
+
 ## Built With
 - [Java 8](http://www.oracle.com/technetwork/java/javase/overview/java8-2100321.html)
 - [Spring Boot](https://projects.spring.io/spring-boot/)

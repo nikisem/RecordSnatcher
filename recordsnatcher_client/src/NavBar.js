@@ -5,12 +5,13 @@ export class NavBar extends React.Component {
 
 
     render() {
+
         return (
-            <div className="App">
+
+            <div>
                 <img className="img-responsive" alt="Record Snatcher" src={logo}/>
             </div>
+
         );
-
     }
-
 }

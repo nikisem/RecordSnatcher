@@ -1,6 +1,7 @@
 import React from 'react';
 import './Main.css';
-import {fetchData} from "./Functions";
+import {Searching} from "./Searching";
+import {addToFilterArray, clearFilterArray, fetchData, filterArray, removeFromFilterArray} from "./Functions";
 import generic from './img/generic.png'
 import com from './img/com.png'
 import uk from './img/uk.png'
@@ -22,100 +23,147 @@ import philippines from './img/philippines.png'
 import singapore from './img/singapore.png'
 import canada from './img/canada.png'
 import huuto from './img/huuto.png'
-
+import up from './img/up.png'
+import {Welcome} from "./Welcome";
+import {Filters} from "./Filters";
+import ScrollToTop from 'react-scroll-up'
 
 export class Main extends React.Component {
 
+
     state = {
         keyword: "",
-        spinner: ""
+        filterMenu: "off",
+        spinner: "off",
+        welcome: "on",
+        filterKeyword: "",
+        filters: filterArray
     }
+
+    handleChange = (event) => {
+
+        this.setState({keyword: event.target.value});
+
+    }
+
 
     handleClick = (e) => {
+
         e.preventDefault()
+        this.setState({filterMenu: "off"})
+        this.setState({rend: null})
+        this.setState({welcome: "off"});
+        this.setState({spinner: "on"});
         this.search()
-        this.spin()
+        this.setState({keyword: ""})
+        this.setState({filterKeyword: ""})
+
     }
 
+
     enterPressed = (e) => {
-        var code = e.keyCode || e.which;
+
+        let code = e.keyCode || e.which;
+
         if (code === 13 && this.state.keyword !== "") {
+
+            this.setState({filterMenu: "off"})
+            this.setState({rend: null})
+            this.setState({welcome: "off"});
+            this.setState({spinner: "on"});
             this.search()
-            this.spin()
+            this.setState({keyword: ""})
+            this.setState({filterKeyword: ""})
+
         }
     }
 
 
     async search() {
 
-        console.log("SEARCHING FOR ", this.state.keyword)
-
-        console.log("FETCHING DATA")
-
+        this.setState({filterMenu: "off"})
         let keyword = this.state.keyword
-
         let offset = -(new Date().getTimezoneOffset() / 60)
-
-        const res = await fetchData(keyword, offset);
-
+        let filters = this.state.filters
+        const res = await fetchData(keyword, offset, filters);
         await this.setStateAsync({data: res})
-
         await this.setStateAsync({rend: this.renderItems()})
-
-        console.log("DONE")
 
     }
 
+
     setStateAsync(state) {
+
+        clearFilterArray()
+        this.setState({spinner: "off"});
         return new Promise((resolve) => {
             this.setState(state, resolve)
         });
-    }
-
-    handleChange = (event) => {
-        this.setState({keyword: event.target.value});
-    }
-
-    spin = () => {
-        var Spinner = require('react-spinkit');
-        var sp = <div><Spinner name="ball-pulse-sync"/> <br/>SEARCHING - This will take several seconds</div>
-
-        this.setState({spinner: sp});
 
     }
 
 
-    searching() {
+    openFilters = () => {
+
+        this.setState({filterMenu: "on"});
+
+    }
+
+
+    handleFilterChange = (event) => {
+
+        this.setState({filterKeyword: event.target.value});
+
+    }
+
+
+    handleFilterClick = (e) => {
+
+        e.preventDefault()
+        let filterKeyword = this.state.filterKeyword
+        addToFilterArray(filterKeyword)
+        this.setState({filterKeyword: ""})
+
+    }
+
+
+    filterEnterPressed = (e) => {
+
+        let code = e.keyCode || e.which;
+
+        if (code === 13 && this.state.keyword === "" && this.state.filterKeyword !== "") {
+
+            let filterKeyword = this.state.filterKeyword
+            addToFilterArray(filterKeyword)
+            this.setState({filterKeyword: ""})
+
+        }
+    }
+
+
+    removeFilterKeyword = (item) => {
+
+        removeFromFilterArray(item)
+        this.setState({update: "yes"});
+
+    }
+
+
+    preSearch() {
+
         return (
+
             <div>
-
-                <div className="grid-item-left">
-                    <input onChange={this.handleChange} onKeyPress={this.enterPressed} type="search" name="search"
-                           required/>
-                    <input disabled={(this.state.keyword.length < 1)} onClick={this.handleClick} type="submit"
-                           value="Search"/>
-                </div>
-
-                <div className="grid-item-left" id="load">
-                    <div>Welcome to Record Snatcher beta.<br/>
-                        Record Snatcher is a power search tool for music collectors. It gets you the latest listings
-                        from 19 diffirent eBay sites and huuto.net
-                    </div>
-                    <br/>
-                    <br/>
-                    <br/>
-                    {this.state.spinner}
-                </div>
-
-
+                <Welcome welcome={this.state.welcome}/>
             </div>
+
         );
     }
 
 
     renderItems() {
-        this.setState({spinner: ""});
-        var items = this.state.data.map(function (item, index) {
+
+        let items = this.state.data.map(function (item, index) {
             return (
                 <div className="grid-container" key={index}>
                     <div className="grid-item-left">
@@ -125,7 +173,7 @@ export class Main extends React.Component {
                                     case "NO IMAGE AVAILABLE":
                                         return <a target="_blank" href={item.link}><img
                                             className="img-responsive img-thumbnail center-block"
-                                            alt="Image not available" title="Image not available" src={generic}/></a>;
+                                            alt="Pic not available" title="Image not available" src={generic}/></a>;
 
                                     default:
                                         return <a target="_blank" href={item.link}><img
@@ -134,13 +182,11 @@ export class Main extends React.Component {
                                 }
                             })()}
                         </p>
-
                     </div>
                     <div className="grid-item-right" id="dont-break-out">
                         <p className="timestamp">{item.timeStampString}</p>
-                        <p className="title"><a target="_blank" href={item.link}>{item.title}</a></p>
-                        <p className="price">{item.price}</p>
-
+                        <p><a target="_blank" href={item.link}>{item.title}</a></p>
+                        <p>{item.price}</p>
                         <p>
                             {(() => {
                                 switch (item.source) {
@@ -189,45 +235,60 @@ export class Main extends React.Component {
                                 }
                             })()}
                         </p>
-
-
                     </div>
-
                 </div>)
 
-
         })
+
+        if (items.length === 0) {
+
+            items = <div>
+                <br/>
+                <div className="center">NO RESULTS FOUND</div>
+                <br/>
+            </div>
+        }
+
         return (
+
             <div>
                 <div>
-
-                    <div className="grid-item-left">
-                        <input onChange={this.handleChange} type="search" name="search" required/>
-                        <input disabled={(this.state.keyword.length < 1)} onClick={this.handleClick}
-                               onKeyPress={this.enterPressed} type="submit"
-                               value="Search"/>
-                    </div>
-                    <div className="grid-item-left" id="load">{this.state.spinner}</div>
-
-
-                </div>
-
-                <div>
                     {items}
+                    <ScrollToTop showUnder={160}>
+                        <img alt="UP" title="Scroll to top" src={up}/>
+                    </ScrollToTop>
                 </div>
             </div>
+
         );
     }
 
     render() {
+
         return (
+
             <div>
+                <div className="grid-item-left">
+                    <input value={this.state.keyword} onChange={this.handleChange} onKeyPress={this.enterPressed}
+                           type="search" name="search"
+                           required/>
+                    <input disabled={(this.state.keyword.length < 1)} onClick={this.handleClick} type="submit"
+                           value="Search"/>
+                    <br/>
+                    <br/>
+                    <Filters filterMenu={this.state.filterMenu} openFilters={this.openFilters}
+                             handleFilterChange={this.handleFilterChange} filterEnterPressed={this.filterEnterPressed}
+                             handleFilterClick={this.handleFilterClick}
+                             filterKeyword={this.state.filterKeyword} removeFilterKeyword={this.removeFilterKeyword}/>
+                </div>
+                <br/>
+                <div>
+                    <Searching spinner={this.state.spinner}/>
+                </div>
 
-                <div>{this.state.rend || this.searching()}</div>
-
+                <div>{this.state.rend || this.preSearch()}</div>
             </div>
+
         );
-
     }
-
 }

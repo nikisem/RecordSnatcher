@@ -64,7 +64,7 @@ public class Huuto {
 
             String offsetString = offset;
 
-            if(!offsetString.contains("-")) {
+            if(!offsetString.contains("-") && !offsetString.contains("+") && !offsetString.contains("Z")) {
                 offsetString = "+" + offsetString;
             }
 

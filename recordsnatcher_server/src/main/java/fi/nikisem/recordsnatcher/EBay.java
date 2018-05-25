@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.Locale;
 
 import static java.time.LocalDateTime.now;
@@ -21,8 +22,6 @@ public class EBay {
 
 
     public ArrayList<Item> fetchData(String keyword, String offset) {
-
-        keyword.replace(" ", "+");
 
         String baseURL = "/sch/11233/i.html?_from=R40&_sop=10&_ipg=200&_nkw=" + keyword + "&rt=nc&LH_PrefLoc=1&_trksid=p2045573.m1684";
         String[] com = {"com", "https://www.ebay.com/sch/Music/11233/i.html?_from=R40&_sop=10&_nkw=" + keyword + "&_ipg=200&rt=nc", "New Listing", offset};
@@ -77,10 +76,10 @@ public class EBay {
 
             for (int j = 0; j < tempList.get(i).size(); j++) {
 
-                for (int k = 0; k < eBayList.size(); k++) {
-                    if (tempList.get(i).get(j).getItemID().equals(eBayList.get(k).getItemID())) {
+                for (Iterator<Item> it = eBayList.iterator(); it.hasNext(); ) {
+                    if (tempList.get(i).get(j).getItemID().equals(it.next().getItemID())) {
 
-                        eBayList.remove(eBayList.get(k));
+                        it.remove();
                         dublicates++;
 
                     }
@@ -123,6 +122,7 @@ public class EBay {
         Elements timeStamps;
         Elements prices;
         Elements notEnoughResults = null;
+        Elements noResults;
 
         String title = null;
         String image = null;
@@ -144,23 +144,61 @@ public class EBay {
             timeStamps = doc.select("span.s-item__listingDate");
             prices = doc.select("span.s-item__price");
             notEnoughResults = doc.select("div.srp-message");
+            noResults = doc.select("h1.srp-controls__count-heading");
+            String itemsFound;
+            Boolean zeroResults = false;
             loop = titles.size();
 
             if (notEnoughResults.size() > 0) {
-                String itemsFound = doc.select("h1.srp-controls__count-heading").get(0).text();
 
-                if (itemsFound.contains(".")) {
-                    itemsFound.replace(".", "");
+                if (noResults.size() > 0) {
+
+                    itemsFound = noResults.get(0).text();
+
+                    if (itemsFound.charAt(0) == '0') {
+
+                        zeroResults = true;
+
+                    } else {
+
+                        itemsFound = notEnoughResults.get(0).text().substring(0, itemsFound.indexOf(" "));
+
+                        if (itemsFound.charAt(0) == '0') {
+
+                            zeroResults = true;
+
+                        } else {
+
+                            itemsFound = noResults.get(0).text().substring(0, noResults.get(0).text().indexOf(" "));
+
+                            if (itemsFound.contains(".")) {
+
+                                itemsFound = itemsFound.replace(".", "");
+
+                            }
+                            if (itemsFound.contains(",")) {
+
+                                itemsFound = itemsFound.replace(",", "");
+
+                            }
+
+                            if (Integer.parseInt(itemsFound) < 200) {
+
+                                loop = Integer.parseInt(itemsFound);
+
+                            }
+
+                        }
+
+                    }
+
                 }
-
-                int itemCount = Integer.parseInt(itemsFound.substring(0, itemsFound.indexOf(" ")));
-                loop = itemCount;
 
             }
 
             for (int i = 0; i < loop; i++) {
 
-                if (titles.size() < 1) {
+                if (zeroResults) {
 
                     System.out.println("No search results from " + country[0]);
                     break;
@@ -168,8 +206,11 @@ public class EBay {
                 } else {
 
                     title = titles.get(i).text();
+
                     if (title.toLowerCase().contains(country[2].toLowerCase())) {
+
                         title = title.replace(country[2], "");
+
                     }
 
                     if (images.get(i).hasAttr("data-src")) {
@@ -208,7 +249,7 @@ public class EBay {
             timeStamps = doc.select("li.timeleft");
             prices = doc.select("li.lvprice");
             notEnoughResults = doc.select("li.lvresult");
-            Elements noResults = doc.select("p.sm-md");
+            noResults = doc.select("p.sm-md");
 
             if (noResults.size() > 0) {
 
@@ -257,6 +298,7 @@ public class EBay {
                             image = "NO IMAGE AVAILABLE";
 
                         }
+
                     }
 
                     link = images.get(i).select("a").attr("href");
@@ -297,8 +339,10 @@ public class EBay {
         LocalDateTime timeStamp = null;
         String offsetString = country[3];
 
-        if (!offsetString.contains("-")) {
+        if (!offsetString.contains("-") && !offsetString.contains("+") && !offsetString.contains("Z")) {
+
             offsetString = "+" + offsetString;
+
         }
 
         ZoneOffset offset = ZoneOffset.of(offsetString);
@@ -306,10 +350,9 @@ public class EBay {
 
         int year = Calendar.getInstance().get(Calendar.YEAR);
         LocalDateTime now = now(ZoneId.of("UTC"));
-        OffsetDateTime timeUtc = now.atOffset(ZoneOffset.UTC); //18:11:06 UTC
-        OffsetDateTime offsetTime = timeUtc.withOffsetSameInstant(offset); //21:11:06 +03:00
+        OffsetDateTime timeUtc = now.atOffset(ZoneOffset.UTC);
+        OffsetDateTime offsetTime = timeUtc.withOffsetSameInstant(offset);
         now = offsetTime.toLocalDateTime();
-
 
         if (country[0].equals("com") || country[0].equals("australia")) {
 

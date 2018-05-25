@@ -8,16 +8,18 @@ class App extends Component {
 
     render() {
 
-
         return (
+
             <Router>
-                <div className="App">
+                <div>
                     <NavBar/>
                     <Switch>
                         <Route exact={true} path='/'
                                render={(props) => <Main {...props}/>}/>
-                    </Switch></div>
+                    </Switch>
+                </div>
             </Router>
+
         );
     }
 }
